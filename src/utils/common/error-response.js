@@ -1,8 +1,14 @@
-const error = {
+const getErrorResponse = (message, errors) => {
+  return {
     success: false,
-    message: 'Something went wrong',
+    message,
     data: {},
-    error: {}
-}
+    error: {
+      details: errors,
+    },
+  };
+};
 
-module.exports = error;
+module.exports = {
+  getErrorResponse,
+};

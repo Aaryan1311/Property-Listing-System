@@ -1,153 +1,34 @@
-const Property = require('../models/properties.model');
 const AppError = require('../utils/error/app-error');
-const { ErrorResponse } = require('../utils/common');
+const { getErrorResponse } = require('../utils/common/error-response');
 const { StatusCodes } = require('http-status-codes');
+const Property = require('../models/properties.model')
 
+const requiredFields = [
+  'id', 'title', 'type', 'price', 'state', 'city',
+  'areaSqft', 'bedrooms', 'bathrooms', 'furnished',
+  'availableFrom', 'listedBy', 'colorTheme', 'listingType',
+];
 
-function validateCreateRequest(req,res,next){
-    if(!req.body){
-        ErrorResponse.message = 'Something went wrong in listing property';
-        ErrorResponse.error = new AppError( ['Required field cannot be null'], StatusCodes.BAD_REQUEST);
-        
-        return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ ErrorResponse});
-    }
-    if(!req.body.id){
-        ErrorResponse.message = 'Something went wrong in listing property';
-        ErrorResponse.error = new AppError( ['Id is required in the request body in correct format'], StatusCodes.BAD_REQUEST);
-        
-        return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ ErrorResponse});
-    }
+function validateCreateRequest(req, res, next) {
+  if (!req.body) {
+    const error = new AppError(['Request body is required'], StatusCodes.BAD_REQUEST);
+    return res.status(StatusCodes.BAD_REQUEST).json(
+      getErrorResponse('Something went wrong in listing property', error.errors)
+    );
+  }
 
-    if(!req.body.title){
-        ErrorResponse.message = 'Something went wrong in listing property';
-        ErrorResponse.error = new AppError( [ `Title cannot be null `], StatusCodes.BAD_REQUEST);
-        
-        return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ ErrorResponse});
-    }
+  const missingFields = requiredFields.filter(field => !req.body[field]);
+  if (missingFields.length > 0) {
+    const error = new AppError(
+      missingFields.map(f => `${f} cannot be null`),
+      StatusCodes.BAD_REQUEST
+    );
+    return res.status(StatusCodes.BAD_REQUEST).json(
+      getErrorResponse('Missing required fields', error.errors)
+    );
+  }
 
-    if(!req.body.type){
-        ErrorResponse.message = 'Something went wrong in listing property';
-        ErrorResponse.error = new AppError( [ `Type cannot be null `], StatusCodes.BAD_REQUEST);
-        
-        return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ ErrorResponse});
-    }
-
-    if(!req.body.price){
-        ErrorResponse.message = 'Something went wrong in listing property';
-        ErrorResponse.error = new AppError( [ `Price cannot be null `], StatusCodes.BAD_REQUEST);
-        
-        return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ ErrorResponse});
-    }
-
-
-    if(!req.body.state){
-        ErrorResponse.message = 'Something went wrong in listing property';
-        ErrorResponse.error = new AppError( [ `State cannot be null `], StatusCodes.BAD_REQUEST);
-        
-        return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ ErrorResponse});
-    }
-
-
-    if(!req.body.city){
-        ErrorResponse.message = 'Something went wrong in listing property';
-        ErrorResponse.error = new AppError( [ `City cannot be null `], StatusCodes.BAD_REQUEST);
-        
-        return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ ErrorResponse});
-    }
-
-
-    if(!req.body.areaSqft){
-        ErrorResponse.message = 'Something went wrong in listing property';
-        ErrorResponse.error = new AppError( [ `Area cannot be null `], StatusCodes.BAD_REQUEST);
-        
-        return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ ErrorResponse});
-    }
-
-
-    if(!req.body.bedrooms){
-        ErrorResponse.message = 'Something went wrong in listing property';
-        ErrorResponse.error = new AppError( [ `Bedrooms cannot be null `], StatusCodes.BAD_REQUEST);
-        
-        return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ ErrorResponse});
-    }
-
-
-    if(!req.body.bathrooms){
-        ErrorResponse.message = 'Something went wrong in listing property';
-        ErrorResponse.error = new AppError( [ `Bathrooms cannot be null `], StatusCodes.BAD_REQUEST);
-        
-        return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ ErrorResponse});
-    }
-
-
-    if(!req.body.furnished){
-        ErrorResponse.message = 'Something went wrong in listing property';
-        ErrorResponse.error = new AppError( [ `Furnished status cannot be null `], StatusCodes.BAD_REQUEST);
-        
-        return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ ErrorResponse});
-    }
-
-
-    if(!req.body.availableFrom){
-        ErrorResponse.message = 'Something went wrong in listing property';
-        ErrorResponse.error = new AppError( [ `Availability date cannot be null `], StatusCodes.BAD_REQUEST);
-        
-        return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ ErrorResponse});
-    }
-
-
-    if(!req.body.listedBy){
-        ErrorResponse.message = 'Something went wrong in listing property';
-        ErrorResponse.error = new AppError( [ `Listed By cannot be null `], StatusCodes.BAD_REQUEST);
-        
-        return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ ErrorResponse});
-    }
-
-
-    if(!req.body.colorTheme){
-        ErrorResponse.message = 'Something went wrong in listing property';
-        ErrorResponse.error = new AppError( [ `Color Theme cannot be null `], StatusCodes.BAD_REQUEST);
-        
-        return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ ErrorResponse});
-    }
-
-    if(!req.body.listingType){
-        ErrorResponse.message = 'Something went wrong in listing property';
-        ErrorResponse.error = new AppError( [ `Listing Type cannot be null `], StatusCodes.BAD_REQUEST);
-        
-        return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ ErrorResponse});
-    }
-    next();
+  next();
 }
 
 
@@ -156,15 +37,19 @@ async function isPropertyOwner(req, res, next) {
     const propertyId = req.params.id;
     const userId = req.user._id;
 
-    const property = await Property.findById(propertyId); // ✅ await is required
+    const property = await Property.findById(propertyId);
 
     if (!property) {
-      return next(new AppError('Property not found', StatusCodes.NOT_FOUND));
+      const err = new AppError(['Property not found'], StatusCodes.NOT_FOUND);
+      return res.status(StatusCodes.NOT_FOUND).json(
+        getErrorResponse('Property not found', err.errors)
+      );
     }
 
     if (property.createdBy.toString() !== userId.toString()) {
-      return next(
-        new AppError('You are not authorized to modify this property', StatusCodes.FORBIDDEN)
+      const err = new AppError(['You are not authorized to modify this property'], StatusCodes.FORBIDDEN);
+      return res.status(StatusCodes.FORBIDDEN).json(
+        getErrorResponse('Forbidden access', err.errors)
       );
     }
 
@@ -174,8 +59,7 @@ async function isPropertyOwner(req, res, next) {
   }
 }
 
-
 module.exports = {
-  validateCreateRequest,
-  isPropertyOwner
+    validateCreateRequest,
+    isPropertyOwner
 }
