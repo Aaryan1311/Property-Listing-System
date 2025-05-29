@@ -1,4 +1,4 @@
-const { registerValidation, loginValidation } = require('./validation.middleware');
+const { registerValidation, loginValidation } = require('./validator.middleware');
 
 module.exports = {
   registerValidation,
