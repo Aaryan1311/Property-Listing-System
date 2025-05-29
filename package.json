@@ -1,0 +1,19 @@
+{
+  "name": "property-listing-system",
+  "version": "1.0.0",
+  "description": "This is a property listing system",
+  "main": "index.js",
+  "scripts": {
+    "dev": "npx nodemon src/index.js"
+  },
+  "author": "Aaryan Tripathi",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "http-status-codes": "^2.3.0",
+    "mongodb": "^6.16.0",
+    "mongoose": "^8.15.1",
+    "nodemon": "^3.1.10"
+  }
+}
