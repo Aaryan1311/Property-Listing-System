@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const { ServerConfig, DatabaseConnection } = require('./config');
+const qs = require('qs');
 
 const apiRoutes = require('./routes');
 
@@ -9,6 +10,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 DatabaseConnection.connectDB();
+app.set('query parser', (str) => qs.parse(str));
 
 app.use('/api',apiRoutes);
 

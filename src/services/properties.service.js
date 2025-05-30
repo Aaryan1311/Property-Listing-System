@@ -41,6 +41,23 @@ const getPropertyById = async (id) => {
   }
 };
 
+
+//Get properties with filter => 
+const getPropertyByFilter = async(data) => {
+    try{
+        const response = await Property.find(data);
+        if (!response) {
+      throw new AppError('Property not found', StatusCodes.NOT_FOUND);
+    }
+    return response;
+  } catch (error) {
+    if (error.name === 'CastError') {
+      throw new AppError('Invalid property ID format', StatusCodes.BAD_REQUEST);
+    }
+    throw new AppError('Failed to fetch property', StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+}
+
 // Update a property by ID
 const updateProperty = async (id, data) => {
   try {
@@ -77,6 +94,7 @@ module.exports = {
   createProperty,
   getAllProperties,
   getPropertyById,
+  getPropertyByFilter,
   updateProperty,
   deleteProperty,
 };
