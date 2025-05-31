@@ -1,10 +1,7 @@
-// src/config/redis-config.js
 const Redis = require('ioredis');
 
-const redis = new Redis({
-  host: process.env.REDIS_HOST || '127.0.0.1',
-  port: process.env.REDIS_PORT || 6379,
-});
+const redis = new Redis(process.env.REDIS_URL);
+
 
 redis.on('connect', () => console.log('Redis connected'));
 redis.on('error', (err) => console.error('Redis error:', err));
