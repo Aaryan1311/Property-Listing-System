@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "description": "This is a property listing system",
   "main": "index.js",
-  "scripts": {
-    "dev": "npx nodemon src/index.js"
-  },
+ "scripts": {
+  "start": "node src/index.js",
+  "dev": "npx nodemon src/index.js"
+},
   "author": "Aaryan Tripathi",
   "license": "ISC",
   "dependencies": {
